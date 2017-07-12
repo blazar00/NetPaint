@@ -11,9 +11,13 @@ import javafx.scene.paint.Color;
  * <p>A PaintObject is an abstract class defining a shape that
  * can be drawn with two points <p>
  * 
- * @author YOUR NAME
+ * @author Braxton Lazar
  *
  */
 public abstract class PaintObject {
+
+	public void draw(GraphicsContext gc) {
+		// TODO Auto-generated method stub
+	}
 
 }

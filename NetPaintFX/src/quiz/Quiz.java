@@ -73,6 +73,7 @@ public class Quiz extends Application {
     allPaintObjects.add(d);
     allPaintObjects.add(oneMore);
     allPaintObjects.add(anOther);
+    
 
     // Draw five rectangles
     // First Point(200, 200) is above and the left of the second point
@@ -87,6 +88,8 @@ public class Quiz extends Application {
     allPaintObjects.add(g);
     allPaintObjects.add(h);
     allPaintObjects.add(i);
+    
+    
 
     // Draw five ovals 
     // First Point(500, 20) is above and the left of the second point
@@ -109,7 +112,8 @@ public class Quiz extends Application {
     allPaintObjects.add(n);
     allPaintObjects.add(o);
     allPaintObjects.add(p);
-
+    
+    
     return allPaintObjects;
   }
 

@@ -1,9 +1,9 @@
 package model;
 
 import java.awt.Point;
+import java.io.Serializable;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
 /**
  * PaintObject
@@ -14,7 +14,7 @@ import javafx.scene.paint.Color;
  * @author Braxton Lazar
  *
  */
-public abstract class PaintObject {
+public abstract class PaintObject implements Serializable{
 
 	public void draw(GraphicsContext gc) {
 		// TODO Auto-generated method stub

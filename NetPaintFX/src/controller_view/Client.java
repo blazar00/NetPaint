@@ -1,9 +1,15 @@
 package controller_view;
 
+import java.awt.Color;
 import java.awt.Point;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.Vector;
 
 import javafx.application.Application;
+import javafx.concurrent.Task;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -13,8 +19,8 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import model.ColorTypeConverter;
 import model.Line;
 import model.Oval;
 import model.PaintObject;
@@ -40,6 +46,42 @@ public class Client extends Application {
 	private Point end;
 	private Vector<PaintObject> allPaintObjects = new Vector<>();
 
+	private ObjectOutputStream writer;
+	private ObjectInputStream inputFromServer;
+	private Socket socketServer;
+	public static String host = "localhost";
+	public GraphicsContext gc;
+
+	private void makeConnection() {
+		ListenForServerUpdates listener = new ListenForServerUpdates();
+		Thread thread = new Thread(listener);
+		thread.setDaemon(true);
+		thread.start();
+	}
+
+	// Listen for the Server to read a modified Vector<PaintObject>
+	// Because JavaFX is not Thread-safe. This must be started in a
+	// new Thread as a Task from the javafx.concurrent Package.
+	private class ListenForServerUpdates extends Task<Object> {
+
+		@SuppressWarnings("unchecked")
+		protected Object call() throws Exception {
+			try {
+				socketServer = new Socket(host, 4011);
+				writer = new ObjectOutputStream(socketServer.getOutputStream()); // from starter/lecture code
+				inputFromServer = new ObjectInputStream(socketServer.getInputStream());
+				drawAllPaintObjects();
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			while(true){
+				allPaintObjects = (Vector<PaintObject>) inputFromServer.readObject();
+				drawAllPaintObjects();
+			}
+		}
+	}
+
 	public static void main(String[] args) {
 		launch(args);
 	}
@@ -49,9 +91,9 @@ public class Client extends Application {
 		BorderPane all = new BorderPane();
 		Scene scene = new Scene(all, 800, 650);
 		Canvas canvas = new Canvas(800, 550);
-		GraphicsContext gc = canvas.getGraphicsContext2D();
+		gc = canvas.getGraphicsContext2D();
 		GridPane gridPane = createGridPane(canvas, gc);
-		gc.setFill(white);
+		gc.setFill(ColorTypeConverter.Awt2Fx(white));
 		gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
 		all.setCenter(canvas);
@@ -59,6 +101,8 @@ public class Client extends Application {
 
 		primaryStage.setScene(scene);
 		primaryStage.show();
+		
+		makeConnection();
 	}
 
 	private GridPane createGridPane(Canvas canvas, GraphicsContext gc) {
@@ -69,9 +113,9 @@ public class Client extends Application {
 		ToggleGroup radioGroup = new ToggleGroup();
 
 		colorPicker = new ColorPicker();
-		colorPicker.setValue(color);
+		colorPicker.setValue(ColorTypeConverter.Awt2Fx(color));
 		colorPicker.setOnAction(event -> {
-			color = colorPicker.getValue();
+			color = ColorTypeConverter.Fx2Awt(colorPicker.getValue());
 		});
 
 		line.setToggleGroup(radioGroup);
@@ -114,7 +158,12 @@ public class Client extends Application {
 			if (start == null)
 				start = new Point((int) event.getX(), (int) event.getY());
 			else {
-				allPaintObjects.add(new Line(color, start, end));
+				try {
+					writer.writeObject(new Line(color, start, end));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				start = null;
 			}
 		});
@@ -124,20 +173,26 @@ public class Client extends Application {
 				end = new Point((int) event.getX(), (int) event.getY());
 				PaintObject pc = new Line(color, start, end);
 				gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-				gc.setFill(white);
+				gc.setFill(ColorTypeConverter.Awt2Fx(white));
 				gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 				for (PaintObject po : allPaintObjects)
-				      po.draw(gc);
+					po.draw(gc);
 				pc.draw(gc);
 			}
 		});
 	}
+
 	private void addHandlersToRect(Canvas canvas, GraphicsContext gc) {
 		canvas.setOnMouseClicked(event -> {
 			if (start == null)
 				start = new Point((int) event.getX(), (int) event.getY());
 			else {
-				allPaintObjects.add(new Rectangle(color, start, end));
+				try {
+					writer.writeObject(new Rectangle(color, start, end));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				start = null;
 			}
 		});
@@ -147,20 +202,26 @@ public class Client extends Application {
 				end = new Point((int) event.getX(), (int) event.getY());
 				PaintObject pc = new Rectangle(color, start, end);
 				gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-				gc.setFill(white);
+				gc.setFill(ColorTypeConverter.Awt2Fx(white));
 				gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 				for (PaintObject po : allPaintObjects)
-				      po.draw(gc);
+					po.draw(gc);
 				pc.draw(gc);
 			}
 		});
 	}
+
 	private void addHandlersToOval(Canvas canvas, GraphicsContext gc) {
 		canvas.setOnMouseClicked(event -> {
 			if (start == null)
 				start = new Point((int) event.getX(), (int) event.getY());
 			else {
-				allPaintObjects.add(new Oval(color, start, end));
+				try {
+					writer.writeObject(new Oval(color, start, end));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				start = null;
 			}
 		});
@@ -170,20 +231,26 @@ public class Client extends Application {
 				end = new Point((int) event.getX(), (int) event.getY());
 				PaintObject pc = new Oval(color, start, end);
 				gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-				gc.setFill(white);
+				gc.setFill(ColorTypeConverter.Awt2Fx(white));
 				gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 				for (PaintObject po : allPaintObjects)
-				      po.draw(gc);
+					po.draw(gc);
 				pc.draw(gc);
 			}
 		});
 	}
+
 	private void addHandlersToPict(Canvas canvas, GraphicsContext gc) {
 		canvas.setOnMouseClicked(event -> {
 			if (start == null)
 				start = new Point((int) event.getX(), (int) event.getY());
 			else {
-				allPaintObjects.add(new Picture(start, end, "doge.jpeg"));
+				try {
+					writer.writeObject(new Picture(start, end, "doge.jpeg"));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				start = null;
 			}
 		});
@@ -193,12 +260,17 @@ public class Client extends Application {
 				end = new Point((int) event.getX(), (int) event.getY());
 				PaintObject pc = new Picture(start, end, "doge.jpeg");
 				gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-				gc.setFill(white);
+				gc.setFill(ColorTypeConverter.Awt2Fx(white));
 				gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 				for (PaintObject po : allPaintObjects)
-				      po.draw(gc);
+					po.draw(gc);
 				pc.draw(gc);
 			}
 		});
+	}
+	
+	private void drawAllPaintObjects() {
+	    for (PaintObject po : allPaintObjects)
+	      po.draw(gc);
 	}
 }

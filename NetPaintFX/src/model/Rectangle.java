@@ -1,11 +1,12 @@
 package model;
 
+import java.awt.Color;
 import java.awt.Point;
+import java.io.Serializable;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
-public class Rectangle extends PaintObject{
+public class Rectangle extends PaintObject implements Serializable{
 	
 	private Color color;
 	private Point s;
@@ -18,7 +19,8 @@ public class Rectangle extends PaintObject{
 	}
 
 	public void draw(GraphicsContext gc){
-		gc.setFill(color);
+		javafx.scene.paint.Color c = ColorTypeConverter.Awt2Fx(color);
+		gc.setFill(c);
 		if(e.getX() > s.getX() && e.getY() > s.getY())
 			gc.fillRect(s.getX(), s.getY(), e.getX() - s.getX(), e.getY() - s.getY());
 		if(s.getX() > e.getX() && s.getY() > e.getY())

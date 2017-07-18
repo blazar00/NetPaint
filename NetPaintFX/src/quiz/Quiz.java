@@ -61,6 +61,7 @@ public class Quiz extends Application {
     Vector<PaintObject> allPaintObjects = new Vector<>();
     // Create six line object, where any line must be drawn between the
     // two Point objects in the provided color. 
+    /*
     PaintObject a = new Line(Color.RED, new Point(10, 100), new Point(500, 100));
     PaintObject b = new Line(Color.CYAN, new Point(250, 150), new Point(250, 5));
     PaintObject c = new Line(Color.GREEN, new Point(255, 10), new Point(255, 145));
@@ -112,7 +113,7 @@ public class Quiz extends Application {
     allPaintObjects.add(n);
     allPaintObjects.add(o);
     allPaintObjects.add(p);
-    
+    */
     
     return allPaintObjects;
   }

@@ -1,11 +1,13 @@
 package model;
 
+
+import java.awt.Color;
 import java.awt.Point;
+import java.io.Serializable;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
-public class Line extends PaintObject{
+public class Line extends PaintObject implements Serializable{
 
 	private Color color;
 	private Point s;
@@ -18,7 +20,8 @@ public class Line extends PaintObject{
 	}
 	
 	public void draw(GraphicsContext gc){
-		gc.setStroke(color);
+		javafx.scene.paint.Color c = ColorTypeConverter.Awt2Fx(color);
+		gc.setStroke(c);
 		gc.strokeLine(s.getX(), s.getY(), e.getX(), e.getY());
 		
 	}
